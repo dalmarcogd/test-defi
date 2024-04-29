@@ -1,21 +1,21 @@
 openapi: 3.0.0
 info:
-  title: E-Commerce Bot API
+  title: Test DeFi API
   version: v0.0.1
 servers:
   - url: /api
 tags:
-  - name: Chat
+  - name: DeFi
 
 paths:
-  /v1/chat:
+  /v1/transactions:
     post:
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ChatResult'
+                $ref: '#/components/schemas/TransactionResult'
           description: Success
         '400':
           description: Bad Request
@@ -40,26 +40,33 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Chat'
+              $ref: '#/components/schemas/Transaction'
         required: true
       summary: Chat with the bot
 
 components:
   schemas:
-    Chat:
+    Transaction:
       type: object
       properties:
-        message:
+        amount:
+          type: string
+        currency:
           type: string
       required:
-        - message
-    ChatResult:
+        - amount
+        - currency
+
+    TransactionResult:
       type: object
       properties:
-        message:
+        hash:
           type: string
-        response:
+        amount:
+          type: string
+        currency:
           type: string
       required:
-        - message
-        - response
+        - hash
+        - amount
+        - currency

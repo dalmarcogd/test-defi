@@ -17,7 +17,7 @@ FROM alpine:latest
 
 WORKDIR /app
 
-COPY --from=build /code/docs/swagger.yaml /docs/swagger.yaml
-COPY --from=build /code/app-binary /app-binary
+COPY --from=build /code/docs/swagger.yaml /app/docs/swagger.yaml
+COPY --from=build /code/app-binary /app/app-binary
 
-ENTRYPOINT [ "/app-binary" ]
+ENTRYPOINT [ "/app/app-binary" ]
