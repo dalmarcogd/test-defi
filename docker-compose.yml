@@ -1,0 +1,119 @@
+services:
+  ecommerce-bot-app:
+    depends_on:
+      - postgres
+      - otel-collector
+    build:
+      dockerfile: ./Dockerfile
+      context: .
+    container_name: ecommerce-bot-app
+    networks:
+      - ecommerce-bot
+    ports:
+      - "8080:8080"
+    volumes:
+      - ".:/code"
+    env_file:
+      - local.env
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: ecommerce-bot-postgres
+    restart: unless-stopped
+    networks:
+      - ecommerce-bot
+    ports:
+      - "5432:5432"
+    command: [ "postgres", "-c", "log_statement=all", "-c", "log_destination=stderr" ]
+    environment:
+      POSTGRES_USER: ecommerce-bot
+      POSTGRES_PASSWORD: ecommerce-bot
+      POSTGRES_DB: rules_engine
+
+  #  database-migration:
+  #    image: migrate/migrate
+  #    container_name: database-migration
+  #    restart: on-failure
+  #    depends_on:
+  #      - postgres
+  #    networks:
+  #      - ecommerce-bot
+  #    volumes:
+  #      - ".:/code"
+  #    command: [ "-path", "/code/migrations/", "-database",  "$DATABASE_URL", "up" ]
+
+  #  redis:
+  #    image: redis:6
+  #    container_name: redis
+  #    restart: unless-stopped
+  #    networks:
+  #      - ecommerce-bot
+  #    command: redis-server --save 60 1 --requirepass MDNcVb924a
+  #    ports:
+  #      - '6379:6379'
+
+  #  redis-commander:
+  #    image: rediscommander/redis-commander:latest
+  #    restart: unless-stopped
+  #    container_name: redis-commander
+  #    depends_on:
+  #      - redis
+  #    environment:
+  #      REDIS_HOSTS: redis
+  #      REDIS_HOST: redis
+  #      REDIS_PORT: redis:6379
+  #      REDIS_PASSWORD: "MDNcVb924a"
+  #      HTTP_USER: root
+  #      HTTP_PASSWORD: root
+  #    networks:
+  #      - ecommerce-bot
+  #    ports:
+  #      - 8081:8081
+
+  otel-collector:
+    image: otel/opentelemetry-collector:latest
+    container_name: otel-collector
+    restart: unless-stopped
+    command: [ "--config=/conf/otel-collector-config.yml" ]
+    volumes:
+      - ./otel-collector-config.yml:/conf/otel-collector-config.yml
+    ports:
+      - 1888:1888 # pprof extension
+      - 8888:8888 # Prometheus metrics exposed by the Collector
+      - 8889:8889 # Prometheus exporter metrics
+      - 13133:13133 # health_check extension
+      - 4317:4317 # OTLP gRPC receiver
+      - 4318:4318 # OTLP http receiver
+      - 55679:55679 # zpages extension
+    #    networks:
+    #      - ecommerce-bot
+    depends_on:
+      - jaeger
+      - prometheus
+
+  jaeger:
+    image: jaegertracing/all-in-one
+    container_name: jaeger
+    restart: unless-stopped
+    #    networks:
+    #      - ecommerce-bot
+    ports:
+      - "14268:14268"   # jaeger-collector HTTP server (tracer provider)
+      - "14250"
+      - "16686:16686"   # HTTP server (browser UI)
+
+  # Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: unless-stopped
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    #    networks:
+    #      - ecommerce-bot
+    ports:
+      - "9090:9090"
+
+networks:
+  ecommerce-bot:
+    name: ecommerce-bot
