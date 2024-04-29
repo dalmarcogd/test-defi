@@ -11,7 +11,7 @@ WORKDIR /code
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o app-binary ./cmd/api/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags "-s -w -X 'main.version=$(VERSION)'" -o app-binary ./cmd/api/main.go
 
 FROM alpine:latest
 

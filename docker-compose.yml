@@ -1,14 +1,14 @@
 services:
-  ecommerce-bot-app:
+  test-defi-app:
     depends_on:
       - postgres
       - otel-collector
     build:
       dockerfile: ./Dockerfile
       context: .
-    container_name: ecommerce-bot-app
+    container_name: test-defi-app
     networks:
-      - ecommerce-bot
+      - test-defi
     ports:
       - "8080:8080"
     volumes:
@@ -18,36 +18,36 @@ services:
 
   postgres:
     image: postgres:16-alpine
-    container_name: ecommerce-bot-postgres
+    container_name: test-defi-postgres
     restart: unless-stopped
     networks:
-      - ecommerce-bot
+      - test-defi
     ports:
       - "5432:5432"
     command: [ "postgres", "-c", "log_statement=all", "-c", "log_destination=stderr" ]
     environment:
-      POSTGRES_USER: ecommerce-bot
-      POSTGRES_PASSWORD: ecommerce-bot
-      POSTGRES_DB: rules_engine
+      POSTGRES_USER: test-defi
+      POSTGRES_PASSWORD: test-defi
+      POSTGRES_DB: test-defi-db
 
-  #  database-migration:
+  #  database-migration-up:
   #    image: migrate/migrate
   #    container_name: database-migration
   #    restart: on-failure
   #    depends_on:
   #      - postgres
   #    networks:
-  #      - ecommerce-bot
+  #      - test-defi
   #    volumes:
   #      - ".:/code"
   #    command: [ "-path", "/code/migrations/", "-database",  "$DATABASE_URL", "up" ]
 
   #  redis:
-  #    image: redis:6
+  #    image: redis:latest
   #    container_name: redis
   #    restart: unless-stopped
   #    networks:
-  #      - ecommerce-bot
+  #      - test-defi
   #    command: redis-server --save 60 1 --requirepass MDNcVb924a
   #    ports:
   #      - '6379:6379'
@@ -66,7 +66,7 @@ services:
   #      HTTP_USER: root
   #      HTTP_PASSWORD: root
   #    networks:
-  #      - ecommerce-bot
+  #      - test-defi
   #    ports:
   #      - 8081:8081
 
@@ -85,8 +85,8 @@ services:
       - 4317:4317 # OTLP gRPC receiver
       - 4318:4318 # OTLP http receiver
       - 55679:55679 # zpages extension
-    #    networks:
-    #      - ecommerce-bot
+    networks:
+      - test-defi
     depends_on:
       - jaeger
       - prometheus
@@ -95,8 +95,8 @@ services:
     image: jaegertracing/all-in-one
     container_name: jaeger
     restart: unless-stopped
-    #    networks:
-    #      - ecommerce-bot
+    networks:
+      - test-defi
     ports:
       - "14268:14268"   # jaeger-collector HTTP server (tracer provider)
       - "14250"
@@ -109,11 +109,11 @@ services:
     restart: unless-stopped
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
-    #    networks:
-    #      - ecommerce-bot
+    networks:
+      - test-defi
     ports:
       - "9090:9090"
 
 networks:
-  ecommerce-bot:
-    name: ecommerce-bot
+  test-defi:
+    name: test-defi

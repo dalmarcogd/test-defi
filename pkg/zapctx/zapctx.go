@@ -24,16 +24,16 @@ func L(ctx context.Context) *zap.Logger {
 }
 
 // StartZapctx configure in zap.Globals logs the zapctx logger.
-func StartZapctx() error {
-	return StartZapctxWithLevel(zapcore.DebugLevel)
+func StartZapctx(version string) error {
+	return StartZapctxWithLevel(version, zapcore.DebugLevel)
 }
 
-func StartZapctxWithLevel(logLevel zapcore.Level) error {
+func StartZapctxWithLevel(version string, logLevel zapcore.Level) error {
 	config := zap.NewProductionConfig()
 	config.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 	config.Level.SetLevel(logLevel)
 
-	log, err := config.Build()
+	log, err := config.Build(zap.Fields(zap.String("version", version)))
 	if err != nil {
 		return err
 	}

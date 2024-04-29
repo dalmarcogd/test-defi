@@ -25,8 +25,10 @@ import (
 	"github.com/dalmarcogd/test-defi/pkg/zapctx"
 )
 
+var version = "v9.9.9"
+
 func main() {
-	err := zapctx.StartZapctx()
+	err := zapctx.StartZapctx(version)
 	if err != nil {
 		log.Fatal(err)
 	}
